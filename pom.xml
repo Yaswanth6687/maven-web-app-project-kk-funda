@@ -98,7 +98,7 @@
 	    <repository>
 	      <id>nexus</id>
 	      <name>KK FUNDA Releases Nexus Repository</name>
-	      <url>http://13.232.141.222:8081/repository/release/</url>
+	      <url>http://15.206.82.243:8081/repository/release/</url>
 	    </repository>
 	    
 	    <snapshotRepository>
