@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+        tools {
+            maven "maven 3.9.8"
+        }
+        stages {
+            stage('git checkout') {
+            steps {
+            git credentialsId: '5f58cb42-d5e4-4b17-ba2c-30fe0cacb4b4', url: 'https://github.com/Yaswanth6687/maven-web-app-project-kk-funda.git'
+        }
+            }
+        stage('build') {
+        steps {
+        sh  "mvn clean package"
+        }
+        }
+        stage('Nexus') {
+            steps {
+                sh "mvn clean deploy"
+            }
+        }
+        stage('Deploy to tomcat') {
+        steps {
+            script {
+               sshagent(['39db1df6-74bf-4e30-bc02-b65ace55d102']) {
+                    // shutting down tomcat
+                    sh "ssh -o StrictHostKeyChecking=no ec2-user@43.205.138.250 'sudo /opt/apache-tomcat-9.0.100/bin/shutdown.sh'"
+
+                        // Deploy WAR file to Tomcat
+                        sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@43.205.138.250:/opt/apache-tomcat-9.0.100/webapps/"
+		    // Permissions on the target server
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@43.205.138.250 'sudo chown -R ec2-user:ec2-user /opt/apache-tomcat-9.0.100/webapps/'"
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@43.205.138.250 'sudo chmod -R 777 /opt/apache-tomcat-9.0.100/webapps/'"
+
+                        // Start Tomcat service
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@43.205.138.250 'sudo /opt/apache-tomcat-9.0.100/bin/startup.sh'"
+                }
+            }
+            }
+        }
+            }
+        } // end of pipeline
+    
+    
+    
